@@ -11,8 +11,8 @@ import React from "react";
 
 export function Header() {
   return (
-    <div className="border-b">
-      <div className="container mx-auto justify-between flex bg-gray-50 py-4 items-center">
+    <div className="border-b bg-gray-50">
+      <div className="container mx-auto justify-between flex  py-4 items-center">
         <Link href="/" className="flex gap-2 items-center text-xl">
           <Image
             src="/logo.png"
