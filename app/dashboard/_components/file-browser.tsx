@@ -26,7 +26,13 @@ function Placeholder() {
   );
 }
 
-export default function FileBrowser({ title, favorites }: { title: string, favorites?: boolean }) {
+export default function FileBrowser({
+  title,
+  favoritesOnly,
+}: {
+  title: string;
+  favoritesOnly?: boolean;
+}) {
   const organization = useOrganization();
   const user = useUser();
   const [query, setQuery] = useState("");
@@ -36,9 +42,14 @@ export default function FileBrowser({ title, favorites }: { title: string, favor
     orgId = organization.organization?.id ?? user.user?.id;
   }
 
+  const favorites = useQuery(
+    api.files.getAllFavorites,
+    orgId ? { orgId } : "skip"
+  );
+
   const files = useQuery(
     api.files.getFiles,
-    orgId ? { orgId: orgId, query, favorites } : "skip"
+    orgId ? { orgId: orgId, query, favorites: favoritesOnly } : "skip"
   );
   const isLoading = files === undefined;
 
@@ -54,7 +65,9 @@ export default function FileBrowser({ title, favorites }: { title: string, favor
       {!isLoading && (
         <>
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-4xl font-bold">{title} ({files?.length})</h1>
+            <h1 className="text-4xl font-bold">
+              {title} ({files?.length})
+            </h1>
             <SearchBar query={query} setQuery={setQuery} />
             <UploadButton />
           </div>
@@ -63,7 +76,7 @@ export default function FileBrowser({ title, favorites }: { title: string, favor
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {files && files?.map((file) => <FileCard key={file._id} file={file} />)}
+        {files && files?.map((file) => <FileCard favorites={favorites ?? []} key={file._id} file={file} />)}
       </div>
     </div>
   );
