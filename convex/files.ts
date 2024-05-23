@@ -3,6 +3,7 @@ import { ConvexError, v } from "convex/values";
 import { getUser } from "./users";
 import { fileTypes } from "./schema";
 import { Id } from "./_generated/dataModel";
+import { access } from "fs";
 
 export const generateUploadUrl = mutation(async (ctx) => {
   const identity = await ctx.auth.getUserIdentity();
@@ -36,7 +37,7 @@ async function hasAccessToOrg(
   }
 
   const hasAccess =
-    user.orgIds.includes(orgId) || user.tokenIdentifier.includes(orgId);
+    user.orgIds.some(item => item.orgId === orgId) || user.tokenIdentifier.includes(orgId);
   if (!hasAccess) {
     return null;
   }
@@ -136,6 +137,12 @@ export const deleteFile = mutation({
     const hasAccess = await hasAccessToFile(ctx, args.fileId);
     if (!hasAccess) {
       throw new ConvexError("you do not have acces to this file");
+    }
+
+    const isAdmin = hasAccess.user.orgIds.find(org => org.orgId === hasAccess.file.orgId)?.role === "admin"
+
+    if (!isAdmin) {
+      throw new ConvexError("you do not have acces to delete this file");
     }
 
     await ctx.db.delete(args.fileId);
