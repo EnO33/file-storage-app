@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -26,23 +25,34 @@ import {
 
 import { Doc, Id } from "@/convex/_generated/dataModel";
 import {
+  DownloadIcon,
   FileTextIcon,
   GanttChartIcon,
   ImageIcon,
   MoreVertical,
-  StarHalf,
   StarIcon,
   Trash2Icon,
+  UndoIcon,
 } from "lucide-react";
 import { ReactNode, useState } from "react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useToast } from "@/components/ui/use-toast";
 import Image from "next/image";
 import { Protect } from "@clerk/nextjs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-function FileCardAction({ file, isFavorited }: { file: Doc<"files">, isFavorited: boolean }) {
+import { formatRelative } from "date-fns";
+
+function FileCardAction({
+  file,
+  isFavorited,
+}: {
+  file: Doc<"files">;
+  isFavorited: boolean;
+}) {
   const deleteFile = useMutation(api.files.deleteFile);
+  const restoreFile = useMutation(api.files.restoreFile);
   const toggleFavorite = useMutation(api.files.toggleFavorite);
   const { toast } = useToast();
 
@@ -54,8 +64,8 @@ function FileCardAction({ file, isFavorited }: { file: Doc<"files">, isFavorited
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your
-              file.
+              This action will mark this file for deletion process. Files are
+              deleted periodically.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -67,8 +77,8 @@ function FileCardAction({ file, isFavorited }: { file: Doc<"files">, isFavorited
                 });
 
                 toast({
-                  title: "File deleted",
-                  description: "Your file has been deleted",
+                  title: "File marked for deletion",
+                  description: "Your file will be deleted soon",
                   variant: "success",
                 });
               }}
@@ -87,6 +97,14 @@ function FileCardAction({ file, isFavorited }: { file: Doc<"files">, isFavorited
           <DropdownMenuItem
             className="flex gap-1 items-center cursor-pointer"
             onClick={() => {
+              window.open(getFileUrl(file.fileId), "_blank");
+            }}
+          >
+            <DownloadIcon className="size-4 mr-2" /> Download
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="flex gap-1 items-center cursor-pointer"
+            onClick={() => {
               toggleFavorite({
                 fileId: file._id,
               });
@@ -98,20 +116,32 @@ function FileCardAction({ file, isFavorited }: { file: Doc<"files">, isFavorited
               <StarIcon className="size-4 mr-2" />
             )}{" "}
             {isFavorited ? "Unfavorite" : "Favorite"} File
-
           </DropdownMenuItem>
-          {/* <Protect
-            role="org:admin"
-            fallback={<></>}
-          > */}
+          <Protect role="org:admin" fallback={<></>}>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              className="flex gap-1 text-rose-500 items-center cursor-pointer"
-              onClick={() => setIsConfirmOpen(true)}
+              className="flex gap-1 items-center cursor-pointer"
+              onClick={() => {
+                if (file.shouldDelete) {
+                  restoreFile({
+                    fileId: file._id,
+                  });
+                } else {
+                  setIsConfirmOpen(true);
+                }
+              }}
             >
-              <Trash2Icon className="size-4 mr-2" /> Delete
+              {file.shouldDelete ? (
+                <div className="flex gap-1 text-emerald-500">
+                  <UndoIcon className="size-4 mr-2" /> Restore
+                </div>
+              ) : (
+                <div className="flex gap-1 text-rose-500">
+                  <Trash2Icon className="size-4 mr-2" /> Delete
+                </div>
+              )}
             </DropdownMenuItem>
-          {/* </Protect> */}
+          </Protect>
         </DropdownMenuContent>
       </DropdownMenu>
     </>
@@ -129,18 +159,24 @@ export function FileCard({
   file: Doc<"files">;
   favorites: Doc<"favorites">[];
 }) {
+  const userProfile = useQuery(api.users.getUserProfile, {
+    userId: file.userId,
+  });
+
   const typeIcons = {
     image: <ImageIcon />,
     pdf: <FileTextIcon />,
     csv: <GanttChartIcon />,
   } as Record<Doc<"files">["type"], ReactNode>;
 
-  const isFavorited = favorites.some((favorite) => favorite.fileId === file._id);
+  const isFavorited = favorites.some(
+    (favorite) => favorite.fileId === file._id
+  );
 
   return (
     <Card>
       <CardHeader className="relative">
-        <CardTitle className="flex gap-2">
+        <CardTitle className="flex gap-2 text-base font-normal">
           <div className="flex justify-center">{typeIcons[file.type]}</div>{" "}
           {file.name}
         </CardTitle>
@@ -161,14 +197,15 @@ export function FileCard({
         {file.type === "csv" && <GanttChartIcon className="size-20" />}
         {file.type === "pdf" && <FileTextIcon className="size-20" />}
       </CardContent>
-      <CardFooter className="flex justify-center">
-        <Button
-          onClick={() => {
-            window.open(getFileUrl(file.fileId), "_blank");
-          }}
-        >
-          Download
-        </Button>
+      <CardFooter className="flex justify-between">
+        <div className="flex gap-2 text-xs text-slate-700 items-center">
+          <Avatar className="size-6">
+            <AvatarImage src={userProfile?.image} />
+            <AvatarFallback>{userProfile?.name}</AvatarFallback>
+          </Avatar>
+          {userProfile?.name}
+        </div>
+        <div className="text-xs text-slate-700">Uploaded on {formatRelative(new Date(file._creationTime), new Date())}</div>
       </CardFooter>
     </Card>
   );
