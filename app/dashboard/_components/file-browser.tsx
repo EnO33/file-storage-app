@@ -96,6 +96,13 @@ export default function FileBrowser({
           <UploadButton />
         </div>
       </div>
+      {isLoading && (
+        <div className="flex flex-col gap-8 w-full items-center mt-24 text-slate-700">
+          <Loader2 className="size-32 animate-spin" />
+          Loading your files...
+        </div>
+      )}
+      
       {files && files.length > 0 && (
         <Tabs defaultValue="grid">
           <div className="flex justify-between items-center">
@@ -127,13 +134,6 @@ export default function FileBrowser({
               </Select>
             </div>
           </div>
-
-          {isLoading && (
-            <div className="flex flex-col gap-8 w-full items-center mt-24 text-slate-700">
-              <Loader2 className="size-32 animate-spin" />
-              Loading your files...
-            </div>
-          )}
 
           <div className="md:hidden flex flex-col justify-between gap-4 my-8">
             <SearchBar query={query} setQuery={setQuery} />

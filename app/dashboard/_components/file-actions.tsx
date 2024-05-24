@@ -33,9 +33,11 @@ import { Protect } from "@clerk/nextjs";
 export function FileCardAction({
   file,
   isFavorited,
+  fileUrl
 }: {
   file: Doc<"files">;
   isFavorited: boolean;
+  fileUrl: string;
 }) {
   const deleteFile = useMutation(api.files.deleteFile);
   const restoreFile = useMutation(api.files.restoreFile);
@@ -84,7 +86,7 @@ export function FileCardAction({
           <DropdownMenuItem
             className="flex gap-1 items-center cursor-pointer"
             onClick={() => {
-              window.open(getFileUrl(file.fileId), "_blank");
+              window.open(fileUrl, "_blank");
             }}
           >
             <DownloadIcon className="size-4 mr-2" /> Download
@@ -139,6 +141,6 @@ export function FileCardAction({
   );
 }
 
-export function getFileUrl(fileId: Id<"_storage">): string {
-  return `${process.env.NEXT_PUBLIC_CONVEX_URL}/api/storage/${fileId}`;
-}
+// export function getFileUrl(fileId: Id<"_storage">): string {
+//   return `${process.env.NEXT_PUBLIC_CONVEX_URL}/api/storage/${fileId}`;
+// }

@@ -279,3 +279,13 @@ async function hasAccessToFile(
 
   return { user: hasAccess.user, file };
 }
+
+export const getImage = query({
+  args: {
+    fileId: v.string(),
+  },
+  async handler(ctx, args) {
+    const url = await ctx.storage.getUrl(args.fileId)
+    return url;
+  },
+});

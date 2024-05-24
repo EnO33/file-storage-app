@@ -6,20 +6,24 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import { Doc } from "@/convex/_generated/dataModel";
-import {
-  FileTextIcon,
-  GanttChartIcon,
-  ImageIcon,
-} from "lucide-react";
+import { Doc, Id } from "@/convex/_generated/dataModel";
+import { FileTextIcon, GanttChartIcon, ImageIcon, Loader2 } from "lucide-react";
 import { ReactNode } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-import { formatRelative } from "date-fns";
-import { FileCardAction, getFileUrl } from "./file-actions";
+import { formatDistance } from "date-fns";
+import { FileCardAction } from "./file-actions";
+
+export const getFileUrl = (file: Id<"_storage">) => {
+  const url = useQuery(
+    api.files.getImage,
+    { fileId: file }
+  );
+  return url
+}
 
 export function FileCard({
   file,
@@ -29,6 +33,10 @@ export function FileCard({
   const userProfile = useQuery(api.users.getUserProfile, {
     userId: file.userId,
   });
+
+  const fileUrl = getFileUrl(file.fileId) as string;
+
+  const isLoading = fileUrl === undefined;
 
   const typeIcons = {
     image: <ImageIcon />,
@@ -44,23 +52,31 @@ export function FileCard({
           {file.name}
         </CardTitle>
         <div className="absolute top-2 right-2">
-          <FileCardAction isFavorited={file.isFavorited} file={file} />
+          <FileCardAction isFavorited={file.isFavorited} file={file} fileUrl={fileUrl} />
         </div>
-        {/* <CardDescription>Card Description</CardDescription> */}
       </CardHeader>
-      <CardContent className="h-[200px] flex justify-center items-center">
-        {file.type === "image" && (
-          <Image
-            alt={file.name}
-            width="200"
-            height="100"
-            src={getFileUrl(file.fileId)}
-          />
-        )}
+      <CardContent className="h-[150px] flex justify-center items-center">
+      {file.type === "image" && (() => {
+        if (isLoading) {
+          return (
+            <Loader2 className="size-4 animate-spin" />
+          )
+        }
+        else {
+          return (
+            <Image
+              alt={file.name}
+              width="200"
+              height="100"
+              src={fileUrl}
+            />
+          );
+        }
+      })()}
         {file.type === "csv" && <GanttChartIcon className="size-20" />}
         {file.type === "pdf" && <FileTextIcon className="size-20" />}
       </CardContent>
-      <CardFooter className="flex justify-between">
+      <CardFooter className="flex justify-between flex-col gap-2">
         <div className="flex gap-2 text-xs text-slate-700 items-center">
           <Avatar className="size-6">
             <AvatarImage src={userProfile?.image} />
@@ -68,7 +84,9 @@ export function FileCard({
           </Avatar>
           {userProfile?.name}
         </div>
-        <div className="text-xs text-slate-700">Uploaded on {formatRelative(new Date(file._creationTime), new Date())}</div>
+        <div className="text-xs text-slate-700">
+          Uploaded {formatDistance(new Date(file._creationTime), new Date(), { addSuffix: true })}
+        </div>
       </CardFooter>
     </Card>
   );
