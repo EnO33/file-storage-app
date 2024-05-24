@@ -26,7 +26,7 @@ export function SearchBar({ query, setQuery }: { query: string, setQuery: Dispat
   return (
     <div>
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2 items-center">
+      <form onChange={form.handleSubmit(onSubmit)} className="flex gap-2 items-center">
         <FormField
           control={form.control}
           name="query"
@@ -39,12 +39,12 @@ export function SearchBar({ query, setQuery }: { query: string, setQuery: Dispat
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={form.formState.isSubmitting} className="flex gap-2" size="sm">
+        {/* <Button type="submit" disabled={form.formState.isSubmitting} className="flex gap-2" size="sm">
             {form.formState.isSubmitting && (
                 <Loader2 className="size-4 mr-2 animate-spin" />
             )}
             <SearchIcon /> Search
-        </Button>
+        </Button> */}
       </form>
     </Form>
     </div>

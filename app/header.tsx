@@ -7,6 +7,7 @@ import {
   UserButton,
   useSession,
 } from "@clerk/nextjs";
+import { FileIcon, FolderIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -22,11 +23,11 @@ export function Header() {
             width={60}
             height={60}
           />{" "}
-          File Application
+          <span className="hidden md:block">File Application</span>
         </Link>
         <SignedIn>
           <Button variant="outline">
-            <Link href="/dashboard/files">Your files</Link>
+            <Link href="/dashboard/files"><span className="hidden sm:block">Your files</span><span className="block sm:hidden"><FolderIcon className="size-4" /></span></Link>
           </Button>
         </SignedIn>
         <div className="flex gap-2">

@@ -29,7 +29,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, PlusIcon } from "lucide-react";
 import { Doc } from "@/convex/_generated/dataModel";
 
 const formSchema = z.object({
@@ -122,7 +122,7 @@ export default function UploadButton() {
                 
               }}
             >
-              Upload file
+              <PlusIcon className="size-4 mr-2" /> Upload file
             </Button>
           </DialogTrigger>
           <DialogContent>

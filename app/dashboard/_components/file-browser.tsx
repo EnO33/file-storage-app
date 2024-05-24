@@ -7,13 +7,7 @@ import { useQuery } from "convex/react";
 import UploadButton from "@/app/dashboard/_components/upload-button";
 import { FileCard } from "@/app/dashboard/_components/file-card";
 import Image from "next/image";
-import {
-  GridIcon,
-  Loader2,
-  RowsIcon,
-  Table2Icon,
-  TableIcon,
-} from "lucide-react";
+import { GridIcon, Loader2, RowsIcon } from "lucide-react";
 import { SearchBar } from "@/app/dashboard/_components/search-bar";
 import { useState } from "react";
 import { DataTable } from "./file-table";
@@ -72,7 +66,13 @@ export default function FileBrowser({
   const files = useQuery(
     api.files.getFiles,
     orgId
-      ? { orgId: orgId, type: type === 'all' ? undefined : type, query, favorites: favoritesOnly, deletedOnly }
+      ? {
+          orgId: orgId,
+          type: type === "all" ? undefined : type,
+          query,
+          favorites: favoritesOnly,
+          deletedOnly,
+        }
       : "skip"
   );
   const isLoading = files === undefined;
@@ -91,56 +91,67 @@ export default function FileBrowser({
         <h1 className="text-4xl font-bold">
           {title} ({files?.length})
         </h1>
-        <SearchBar query={query} setQuery={setQuery} />
-        <UploadButton />
-      </div>
-
-      <Tabs defaultValue="grid">
-        <div className="flex justify-between items-center">
-          <TabsList className="mb-2">
-            <TabsTrigger value="grid" className="flex gap-2 items-center">
-              <GridIcon /> Grid
-            </TabsTrigger>
-            <TabsTrigger value="table" className="flex gap-2 items-center">
-              <RowsIcon /> Table
-            </TabsTrigger>
-          </TabsList>
-          <div className="flex gap-2 items-center">
-            <Label htmlFor="type-select">Type Filter</Label>
-            <Select value={type} onValueChange={(newType) => {
-              setType(newType as any);
-              }}>
-              <SelectTrigger id="type-select" className="w-[180px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="image">Image</SelectItem>
-                <SelectItem value="csv">CSV</SelectItem>
-                <SelectItem value="pdf">PDF</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="hidden md:flex lg:justify-between md:gap-4">
+          <SearchBar query={query} setQuery={setQuery} />
+          <UploadButton />
         </div>
-
-        {isLoading && (
-          <div className="flex flex-col gap-8 w-full items-center mt-24 text-slate-700">
-            <Loader2 className="size-32 animate-spin" />
-            Loading your files...
+      </div>
+      {files && files.length > 0 && (
+        <Tabs defaultValue="grid">
+          <div className="flex justify-between items-center">
+            <TabsList className="mb-2 md:w-auto w-full">
+              <TabsTrigger value="grid" className="flex gap-2 items-center">
+                <GridIcon /> Grid
+              </TabsTrigger>
+              <TabsTrigger value="table" className="flex gap-2 items-center">
+                <RowsIcon /> Table
+              </TabsTrigger>
+            </TabsList>
+            <div className="hidden md:flex lg:justify-between md:gap-2 items-center">
+              <Label htmlFor="type-select">Type Filter</Label>
+              <Select
+                value={type}
+                onValueChange={(newType) => {
+                  setType(newType as any);
+                }}
+              >
+                <SelectTrigger id="type-select" className="w-[180px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="image">Image</SelectItem>
+                  <SelectItem value="csv">CSV</SelectItem>
+                  <SelectItem value="pdf">PDF</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        )}
 
-        <TabsContent value="grid">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {modifiedFiles?.map((file) => (
-              <FileCard key={file._id} file={file} />
-            ))}
+          {isLoading && (
+            <div className="flex flex-col gap-8 w-full items-center mt-24 text-slate-700">
+              <Loader2 className="size-32 animate-spin" />
+              Loading your files...
+            </div>
+          )}
+
+          <div className="md:hidden flex flex-col justify-between gap-4 my-8">
+            <SearchBar query={query} setQuery={setQuery} />
+            <UploadButton />
           </div>
-        </TabsContent>
-        <TabsContent value="table">
-          <DataTable columns={columns} data={modifiedFiles} />
-        </TabsContent>
-      </Tabs>
+
+          <TabsContent value="grid">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {modifiedFiles?.map((file) => (
+                <FileCard key={file._id} file={file} />
+              ))}
+            </div>
+          </TabsContent>
+          <TabsContent value="table">
+            <DataTable columns={columns} data={modifiedFiles} />
+          </TabsContent>
+        </Tabs>
+      )}
 
       {files?.length === 0 && <Placeholder />}
     </div>
