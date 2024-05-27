@@ -34,10 +34,10 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col justify-center items-center my-12">
-            <Image src="files.svg" alt="files" width={250} height={250} />
+            <Image src="files-2.svg" alt="files" width={500} height={500} />
           </div>
 
-          <div className="mt-10 flex items-center justify-center gap-x-6">
+          <div className="mt-20 mb-12 flex items-center justify-center gap-x-6">
             <Button size="xl">
               <Link href="/dashboard/files">Get started</Link>
             </Button>
