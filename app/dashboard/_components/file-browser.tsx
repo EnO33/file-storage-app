@@ -13,6 +13,7 @@ import { useState } from "react";
 import { DataTable } from "./file-table";
 import { columns } from "./columns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge"
 
 import {
   Select,
@@ -88,8 +89,8 @@ export default function FileBrowser({
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold">
-          {title} ({files?.length})
+        <h1 className="text-4xl font-bold items-center flex gap-2">
+          {title} {files && <Badge className="text-base">{files.length}</Badge>}
         </h1>
         <div className="hidden md:flex lg:justify-between md:gap-4">
           <SearchBar query={query} setQuery={setQuery} />
